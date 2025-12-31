@@ -6,10 +6,14 @@
 //
 
 import SwiftUI
+import os.log
+
+private let logger = Logger(subsystem: "com.scanflow.app", category: "PreviewView")
 
 struct PreviewView: View {
     @Environment(AppState.self) private var appState
     @State private var previewImage: Image?
+    @State private var isLoadingPreview = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -20,6 +24,11 @@ struct PreviewView: View {
 
                 Spacer()
 
+                if isLoadingPreview {
+                    ProgressView()
+                        .scaleEffect(0.7)
+                }
+
                 Button {
                     Task {
                         await loadPreview()
@@ -28,7 +37,7 @@ struct PreviewView: View {
                     Label("Refresh", systemImage: "arrow.clockwise")
                 }
                 .buttonStyle(.borderless)
-                .disabled(!appState.scannerManager.connectionState.isConnected && !appState.useMockScanner)
+                .disabled(!appState.scannerManager.connectionState.isConnected && !appState.useMockScanner || isLoadingPreview)
             }
             .padding()
 
@@ -57,14 +66,23 @@ struct PreviewView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color(nsColor: .controlBackgroundColor).opacity(0.5))
         }
+        .onAppear {
+            logger.info("PreviewView appeared")
+        }
     }
 
     private func loadPreview() async {
+        logger.info("Loading preview scan...")
+        isLoadingPreview = true
+        defer { isLoadingPreview = false }
+
         #if os(macOS)
         do {
             let nsImage = try await appState.scannerManager.requestOverviewScan()
             previewImage = Image(nsImage: nsImage)
+            logger.info("Preview loaded successfully")
         } catch {
+            logger.error("Failed to load preview: \(error.localizedDescription)")
             appState.showAlert(message: "Failed to load preview: \(error.localizedDescription)")
         }
         #endif

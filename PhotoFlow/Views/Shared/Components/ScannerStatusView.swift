@@ -6,61 +6,52 @@
 //
 
 import SwiftUI
+import os.log
+
+private let logger = Logger(subsystem: "com.scanflow.app", category: "ScannerStatusView")
 
 struct ScannerStatusView: View {
     @Environment(AppState.self) private var appState
 
     var body: some View {
         #if os(macOS)
-        Menu {
-            if !appState.scannerManager.availableScanners.isEmpty {
-                Section("Available Scanners") {
-                    ForEach(appState.scannerManager.availableScanners, id: \.self) { scanner in
-                        Button(scanner.name ?? "Unknown Scanner") {
-                            Task {
-                                try? await appState.scannerManager.connect(to: scanner)
-                            }
-                        }
+        HStack(spacing: 8) {
+            Circle()
+                .fill(statusColor)
+                .frame(width: 8, height: 8)
+                .overlay {
+                    if appState.scannerManager.connectionState == .scanning {
+                        Circle()
+                            .fill(statusColor.opacity(0.3))
+                            .frame(width: 16, height: 16)
+                            .scaleEffect(pulseAnimation ? 1.5 : 1.0)
+                            .animation(.easeInOut(duration: 1.0).repeatForever(), value: pulseAnimation)
                     }
                 }
-                Divider()
-            }
 
-            Button("Discover Scanners") {
-                Task {
-                    await appState.scannerManager.discoverScanners()
+            VStack(alignment: .leading, spacing: 0) {
+                if let scanner = appState.scannerManager.selectedScanner {
+                    Text(scanner.name ?? "Unknown Scanner")
+                        .font(.caption)
+                        .fontWeight(.medium)
+                        .lineLimit(1)
+                } else if appState.useMockScanner && appState.scannerManager.connectionState.isConnected {
+                    Text("Mock Scanner")
+                        .font(.caption)
+                        .fontWeight(.medium)
+                        .lineLimit(1)
                 }
-            }
-            .disabled(appState.scannerManager.connectionState == .discovering)
-
-            if appState.scannerManager.connectionState.isConnected {
-                Button("Disconnect") {
-                    Task {
-                        await appState.scannerManager.disconnect()
-                    }
-                }
-            }
-        } label: {
-            HStack(spacing: 8) {
-                Circle()
-                    .fill(statusColor)
-                    .frame(width: 8, height: 8)
-                    .overlay {
-                        if appState.scannerManager.connectionState == .scanning {
-                            Circle()
-                                .fill(statusColor.opacity(0.3))
-                                .frame(width: 16, height: 16)
-                                .scaleEffect(pulseAnimation ? 1.5 : 1.0)
-                        }
-                    }
-
                 Text(statusText)
-                    .font(.caption)
+                    .font(.caption2)
                     .foregroundStyle(.secondary)
+                    .lineLimit(1)
             }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(.ultraThinMaterial, in: Capsule())
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8))
+        .onAppear {
+            pulseAnimation = true
         }
         #else
         HStack(spacing: 8) {
@@ -94,18 +85,7 @@ struct ScannerStatusView: View {
     }
 
     private var statusText: String {
-        if appState.useMockScanner {
-            return "Mock Scanner"
-        }
-        return appState.scannerManager.connectionState.description
-    }
-
-    private var animationTimer: Timer {
-        Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
-            withAnimation(.easeInOut(duration: 1.0)) {
-                pulseAnimation.toggle()
-            }
-        }
+        appState.scannerManager.connectionState.description
     }
 }
 

@@ -19,11 +19,15 @@
 		/* ViewModels */
 		AA0201 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0202; };
 		AA0203 /* ScannerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0204; };
+		AA0205 /* SettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0206; };
+		AA0207 /* ImageProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0208; };
+		AA0209 /* PDFExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA020A; };
 
 		/* Views - macOS */
 		AA0301 /* MainWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0302; };
 		AA0303 /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0304; };
 		AA0305 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0306; };
+		AA0307 /* ScannerSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0308; };
 
 		/* Views - Shared */
 		AA0401 /* ScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0402; };
@@ -48,10 +52,14 @@
 
 		AA0202 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		AA0204 /* ScannerManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScannerManager.swift; sourceTree = "<group>"; };
+		AA0206 /* SettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsStore.swift; sourceTree = "<group>"; };
+		AA0208 /* ImageProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageProcessor.swift; sourceTree = "<group>"; };
+		AA020A /* PDFExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFExporter.swift; sourceTree = "<group>"; };
 
 		AA0302 /* MainWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainWindow.swift; sourceTree = "<group>"; };
 		AA0304 /* SidebarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarView.swift; sourceTree = "<group>"; };
 		AA0306 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		AA0308 /* ScannerSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScannerSelectionView.swift; sourceTree = "<group>"; };
 
 		AA0402 /* ScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanView.swift; sourceTree = "<group>"; };
 		AA0404 /* QueueView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QueueView.swift; sourceTree = "<group>"; };
@@ -121,6 +129,9 @@
 			children = (
 				AA0202 /* AppState.swift */,
 				AA0204 /* ScannerManager.swift */,
+				AA0206 /* SettingsStore.swift */,
+				AA0208 /* ImageProcessor.swift */,
+				AA020A /* PDFExporter.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -140,6 +151,7 @@
 				AA0302 /* MainWindow.swift */,
 				AA0304 /* SidebarView.swift */,
 				AA0306 /* SettingsView.swift */,
+				AA0308 /* ScannerSelectionView.swift */,
 			);
 			path = macOS;
 			sourceTree = "<group>";
@@ -256,9 +268,13 @@
 				AA0107 /* ScanMetadata.swift in Sources */,
 				AA0201 /* AppState.swift in Sources */,
 				AA0203 /* ScannerManager.swift in Sources */,
+				AA0205 /* SettingsStore.swift in Sources */,
+				AA0207 /* ImageProcessor.swift in Sources */,
+				AA0209 /* PDFExporter.swift in Sources */,
 				AA0301 /* MainWindow.swift in Sources */,
 				AA0303 /* SidebarView.swift in Sources */,
 				AA0305 /* SettingsView.swift in Sources */,
+				AA0307 /* ScannerSelectionView.swift in Sources */,
 				AA0401 /* ScanView.swift in Sources */,
 				AA0403 /* QueueView.swift in Sources */,
 				AA0405 /* LibraryView.swift in Sources */,

@@ -6,6 +6,9 @@
 //
 
 import SwiftUI
+import os.log
+
+private let logger = Logger(subsystem: "com.scanflow.app", category: "ScanView")
 
 struct ScanView: View {
     @Environment(AppState.self) private var appState
@@ -17,10 +20,14 @@ struct ScanView: View {
             PreviewView()
                 .frame(minWidth: 400, maxWidth: .infinity)
 
-            // Control Panel (Inspector style)
+            Divider()
+
+            // Control Panel (Inspector style) - fixed width to prevent overflow
             ControlPanelView()
-                .frame(width: 300)
                 .background(.thinMaterial)
+        }
+        .onAppear {
+            logger.info("ScanView appeared")
         }
         #else
         VStack {

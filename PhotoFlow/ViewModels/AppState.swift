@@ -7,6 +7,9 @@
 
 import Foundation
 import SwiftUI
+import os.log
+
+private let logger = Logger(subsystem: "com.scanflow.app", category: "AppState")
 
 enum NavigationSection: String, CaseIterable, Identifiable {
     case scan = "Scan"
@@ -74,92 +77,20 @@ class AppState {
         set { _settings.useMockScanner = newValue }
     }
 
-    // Barcode Settings
-    var barcodeEnabled: Bool {
-        get { _settings.barcodeEnabled }
-        set { _settings.barcodeEnabled = newValue }
-    }
-    var barcodeUseForNaming: Bool {
-        get { _settings.barcodeUseForNaming }
-        set { _settings.barcodeUseForNaming = newValue }
-    }
-    var barcodeUseForSplitting: Bool {
-        get { _settings.barcodeUseForSplitting }
-        set { _settings.barcodeUseForSplitting = newValue }
-    }
-    var barcodeSplitPattern: String {
-        get { _settings.barcodeSplitPattern }
-        set { _settings.barcodeSplitPattern = newValue }
-    }
-    var barcodeUseForFolderRouting: Bool {
-        get { _settings.barcodeUseForFolderRouting }
-        set { _settings.barcodeUseForFolderRouting = newValue }
-    }
-    var barcodeAddToMetadata: Bool {
-        get { _settings.barcodeAddToMetadata }
-        set { _settings.barcodeAddToMetadata = newValue }
-    }
-    var barcodeMinimumConfidence: Double {
-        get { _settings.barcodeMinimumConfidence }
-        set { _settings.barcodeMinimumConfidence = newValue }
-    }
-
-    // Imprinter Settings
-    var imprinterEnabled: Bool {
-        get { _settings.imprinterEnabled }
-        set { _settings.imprinterEnabled = newValue }
-    }
-    var imprinterText: String {
-        get { _settings.imprinterText }
-        set { _settings.imprinterText = newValue }
-    }
-    var imprinterPosition: String {
-        get { _settings.imprinterPosition }
-        set { _settings.imprinterPosition = newValue }
-    }
-    var imprinterRotation: Int {
-        get { _settings.imprinterRotation }
-        set { _settings.imprinterRotation = newValue }
-    }
-    var imprinterOpacity: Double {
-        get { _settings.imprinterOpacity }
-        set { _settings.imprinterOpacity = newValue }
-    }
-    var imprinterFontSize: Double {
-        get { _settings.imprinterFontSize }
-        set { _settings.imprinterFontSize = newValue }
-    }
-    var imprinterFontName: String {
-        get { _settings.imprinterFontName }
-        set { _settings.imprinterFontName = newValue }
-    }
-    var imprinterTextColor: String {
-        get { _settings.imprinterTextColor }
-        set { _settings.imprinterTextColor = newValue }
-    }
-    var imprinterIncludeDate: Bool {
-        get { _settings.imprinterIncludeDate }
-        set { _settings.imprinterIncludeDate = newValue }
-    }
-    var imprinterIncludeTime: Bool {
-        get { _settings.imprinterIncludeTime }
-        set { _settings.imprinterIncludeTime = newValue }
-    }
-    var imprinterIncludePageNumbers: Bool {
-        get { _settings.imprinterIncludePageNumbers }
-        set { _settings.imprinterIncludePageNumbers = newValue }
-    }
-
     init() {
-        // Initialize with user defaults if needed
+        logger.info("AppState initializing...")
         loadPresets()
+        logger.info("AppState initialized with \(self.presets.count) presets")
     }
 
     func loadPresets() {
-        // Load custom presets from UserDefaults if available
+        logger.info("Loading presets from UserDefaults")
         if let data = UserDefaults.standard.data(forKey: "customPresets"),
            let customPresets = try? JSONDecoder().decode([ScanPreset].self, from: data) {
             presets = ScanPreset.defaults + customPresets
+            logger.info("Loaded \(customPresets.count) custom presets")
+        } else {
+            logger.info("No custom presets found, using defaults")
         }
     }
 
@@ -169,10 +100,12 @@ class AppState {
         }
         if let data = try? JSONEncoder().encode(customPresets) {
             UserDefaults.standard.set(data, forKey: "customPresets")
+            logger.info("Saved \(customPresets.count) custom presets")
         }
     }
 
     func addToQueue(preset: ScanPreset, count: Int = 1) {
+        logger.info("Adding \(count) scan(s) to queue with preset: \(preset.name)")
         for i in 0..<count {
             let scan = QueuedScan(
                 name: "Scan \(scanQueue.count + i + 1)",
@@ -180,37 +113,50 @@ class AppState {
             )
             scanQueue.append(scan)
         }
+        logger.info("Queue now contains \(self.scanQueue.count) items")
     }
 
     func removeFromQueue(scan: QueuedScan) {
+        logger.info("Removing scan from queue: \(scan.name)")
         scanQueue.removeAll { $0.id == scan.id }
     }
 
     func startScanning() async {
-        guard !scanQueue.isEmpty else { return }
+        guard !scanQueue.isEmpty else {
+            logger.warning("startScanning called but queue is empty")
+            return
+        }
+
+        logger.info("Starting scan process with \(self.scanQueue.count) items in queue")
         isScanning = true
 
         for index in scanQueue.indices where scanQueue[index].status == .pending {
+            logger.info("Processing queue item \(index + 1): \(self.scanQueue[index].name)")
             scanQueue[index].status = .scanning
 
             do {
                 #if os(macOS)
+                logger.info("Initiating scan with preset: \(self.scanQueue[index].preset.name)")
                 let result = try await scannerManager.scan(with: scanQueue[index].preset)
+                logger.info("Scan completed, processing image...")
 
-                // Save the scanned file
                 scanQueue[index].status = .processing
                 let savedFile = try await saveScannedImage(result, preset: scanQueue[index].preset)
                 scannedFiles.append(savedFile)
+                logger.info("Image saved to: \(savedFile.fileURL.path)")
 
                 scanQueue[index].status = .completed
+                logger.info("Scan \(index + 1) completed successfully")
                 #endif
             } catch {
+                logger.error("Scan failed: \(error.localizedDescription)")
                 scanQueue[index].status = .failed(error.localizedDescription)
                 showAlert(message: "Scan failed: \(error.localizedDescription)")
             }
         }
 
         isScanning = false
+        logger.info("Scan process completed")
     }
 
     #if os(macOS)
