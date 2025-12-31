@@ -79,8 +79,21 @@ class ScannerManager: NSObject {
         logger.info("Setting up device browser for scanner discovery")
         deviceBrowser = ICDeviceBrowser()
         deviceBrowser?.delegate = self
-        deviceBrowser?.browsedDeviceTypeMask = ICDeviceTypeMask.scanner
-        logger.info("Device browser configured with scanner mask")
+
+        // Include all scanner location types: local (USB), shared (network), bonjour, bluetooth
+        // The mask combines device type with location types
+        let scannerTypeMask = ICDeviceTypeMask.scanner.rawValue
+        let localMask = ICDeviceLocationTypeMask.local.rawValue
+        let sharedMask = ICDeviceLocationTypeMask.shared.rawValue
+        let bonjourMask = ICDeviceLocationTypeMask.bonjour.rawValue
+        let bluetoothMask = ICDeviceLocationTypeMask.bluetooth.rawValue
+
+        let combinedMask = scannerTypeMask | localMask | sharedMask | bonjourMask | bluetoothMask
+        if let mask = ICDeviceTypeMask(rawValue: combinedMask) {
+            deviceBrowser?.browsedDeviceTypeMask = mask
+        }
+
+        logger.info("Device browser configured for local, shared, bonjour, and bluetooth scanners (mask: \(combinedMask))")
     }
 
     func discoverScanners() async {
