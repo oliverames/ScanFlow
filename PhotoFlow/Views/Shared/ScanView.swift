@@ -16,15 +16,17 @@ struct ScanView: View {
     var body: some View {
         #if os(macOS)
         HStack(spacing: 0) {
-            // Preview Area
+            // Preview Area - takes remaining space
             PreviewView()
                 .frame(minWidth: 400, maxWidth: .infinity)
+                .layoutPriority(1) // Give priority to preview area
 
             Divider()
 
-            // Control Panel (Inspector style) - fixed width to prevent overflow
+            // Control Panel (Inspector style) - fixed width, prevents overflow
             ControlPanelView()
                 .background(.thinMaterial)
+                .fixedSize(horizontal: true, vertical: false) // Keep fixed width
         }
         .onAppear {
             logger.info("ScanView appeared")

@@ -181,21 +181,24 @@ struct ScannerSelectionView: View {
 
     private func startAutoRefresh() {
         // Start continuous browsing - the device browser will call delegates as devices appear/disappear
+        // The delegate callbacks (didAdd/didRemove) maintain the availableScanners list automatically
         appState.scannerManager.startBrowsing()
 
-        // Also do an initial discovery call
+        // Do one initial discovery call to populate the list
+        // After this, the device browser delegates will keep it updated
         Task {
             await appState.scannerManager.discoverScanners()
         }
 
-        // Periodic state refresh (device browser stays running, this just updates UI state)
+        // We don't need to call discoverScanners repeatedly - the device browser
+        // delegates handle adding/removing scanners as they appear/disappear.
+        // Just update the lastRefreshTime for UI feedback
         autoRefreshTask = Task {
             while !Task.isCancelled {
-                try? await Task.sleep(for: .seconds(10))
+                try? await Task.sleep(for: .seconds(30))
                 if !Task.isCancelled {
-                    logger.debug("Auto-refresh: checking for scanners")
-                    // Just trigger a state update, browser is already running
-                    await appState.scannerManager.discoverScanners()
+                    logger.debug("Auto-refresh: updating timestamp")
+                    lastRefreshTime = Date()
                 }
             }
         }
