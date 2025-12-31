@@ -20,11 +20,11 @@ let package = Package(
         .executableTarget(
             name: "ScanFlow",
             dependencies: [],
-            path: "PhotoFlow",  // Keep directory name for now
+            path: "ScanFlow",
             exclude: [],
             resources: [
                 .process("Resources/Info-macOS.plist"),
-                .process("PhotoFlow.entitlements")
+                .process("ScanFlow.entitlements")
             ],
             swiftSettings: [
                 .enableUpcomingFeature("BareSlashRegexLiterals")

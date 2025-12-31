@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "AA0100"
-               BuildableName = "PhotoFlow.app"
-               BlueprintName = "PhotoFlow"
-               ReferencedContainer = "container:PhotoFlow.xcodeproj">
+               BuildableName = "ScanFlow.app"
+               BlueprintName = "ScanFlow"
+               ReferencedContainer = "container:ScanFlow.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -45,9 +45,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "AA0100"
-            BuildableName = "PhotoFlow.app"
-            BlueprintName = "PhotoFlow"
-            ReferencedContainer = "container:PhotoFlow.xcodeproj">
+            BuildableName = "ScanFlow.app"
+            BlueprintName = "ScanFlow"
+            ReferencedContainer = "container:ScanFlow.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -62,9 +62,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "AA0100"
-            BuildableName = "PhotoFlow.app"
-            BlueprintName = "PhotoFlow"
-            ReferencedContainer = "container:PhotoFlow.xcodeproj">
+            BuildableName = "ScanFlow.app"
+            BlueprintName = "ScanFlow"
+            ReferencedContainer = "container:ScanFlow.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

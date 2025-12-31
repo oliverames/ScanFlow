@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		/* App */
-		AA0001 /* PhotoFlowApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002; };
+		AA0001 /* ScanFlowApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0002; };
 
 		/* Models */
 		AA0101 /* ScanPreset.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0102; };
@@ -42,8 +42,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		AA0000 /* PhotoFlow.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PhotoFlow.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		AA0002 /* PhotoFlowApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoFlowApp.swift; sourceTree = "<group>"; };
+		AA0000 /* ScanFlow.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ScanFlow.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA0002 /* ScanFlowApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanFlowApp.swift; sourceTree = "<group>"; };
 
 		AA0102 /* ScanPreset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanPreset.swift; sourceTree = "<group>"; };
 		AA0104 /* ScannedFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScannedFile.swift; sourceTree = "<group>"; };
@@ -87,28 +87,28 @@
 		AA0020 = {
 			isa = PBXGroup;
 			children = (
-				AA0030 /* PhotoFlow */,
+				AA0030 /* ScanFlow */,
 				AA0040 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		AA0030 /* PhotoFlow */ = {
+		AA0030 /* ScanFlow */ = {
 			isa = PBXGroup;
 			children = (
-				AA0002 /* PhotoFlowApp.swift */,
+				AA0002 /* ScanFlowApp.swift */,
 				AA0050 /* Models */,
 				AA0060 /* ViewModels */,
 				AA0070 /* Views */,
 				AA0080 /* Services */,
 				AA0090 /* Resources */,
 			);
-			path = PhotoFlow;
+			path = ScanFlow;
 			sourceTree = "<group>";
 		};
 		AA0040 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				AA0000 /* PhotoFlow.app */,
+				AA0000 /* ScanFlow.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -196,9 +196,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		AA0100 /* PhotoFlow */ = {
+		AA0100 /* ScanFlow */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = AA0110 /* Build configuration list for PBXNativeTarget "PhotoFlow" */;
+			buildConfigurationList = AA0110 /* Build configuration list for PBXNativeTarget "ScanFlow" */;
 			buildPhases = (
 				AA0120 /* Sources */,
 				AA0010 /* Frameworks */,
@@ -208,9 +208,9 @@
 			);
 			dependencies = (
 			);
-			name = PhotoFlow;
-			productName = PhotoFlow;
-			productReference = AA0000 /* PhotoFlow.app */;
+			name = ScanFlow;
+			productName = ScanFlow;
+			productReference = AA0000 /* ScanFlow.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -228,7 +228,7 @@
 					};
 				};
 			};
-			buildConfigurationList = AA0160 /* Build configuration list for PBXProject "PhotoFlow" */;
+			buildConfigurationList = AA0160 /* Build configuration list for PBXProject "ScanFlow" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -241,7 +241,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				AA0100 /* PhotoFlow */,
+				AA0100 /* ScanFlow */,
 			);
 		};
 /* End PBXProject section */
@@ -261,7 +261,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AA0001 /* PhotoFlowApp.swift in Sources */,
+				AA0001 /* ScanFlowApp.swift in Sources */,
 				AA0101 /* ScanPreset.swift in Sources */,
 				AA0103 /* ScannedFile.swift in Sources */,
 				AA0105 /* QueuedScan.swift in Sources */,
@@ -406,7 +406,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = PhotoFlow/PhotoFlow.entitlements;
+				CODE_SIGN_ENTITLEMENTS = ScanFlow/ScanFlow.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -414,8 +414,8 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = PhotoFlow/Resources/Info-macOS.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = PhotoFlow;
+				INFOPLIST_FILE = ScanFlow/Resources/Info-macOS.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = ScanFlow;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -440,7 +440,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = PhotoFlow/PhotoFlow.entitlements;
+				CODE_SIGN_ENTITLEMENTS = ScanFlow/ScanFlow.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -448,8 +448,8 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = PhotoFlow/Resources/Info-macOS.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = PhotoFlow;
+				INFOPLIST_FILE = ScanFlow/Resources/Info-macOS.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = ScanFlow;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -473,7 +473,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		AA0110 /* Build configuration list for PBXNativeTarget "PhotoFlow" */ = {
+		AA0110 /* Build configuration list for PBXNativeTarget "ScanFlow" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				AA0220 /* Debug */,
@@ -482,7 +482,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		AA0160 /* Build configuration list for PBXProject "PhotoFlow" */ = {
+		AA0160 /* Build configuration list for PBXProject "ScanFlow" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				AA0200 /* Debug */,

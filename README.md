@@ -42,12 +42,12 @@ A professional document scanning application for macOS built with SwiftUI, featu
 
 ```bash
 # Using Xcode
-open PhotoFlow.xcodeproj
+open ScanFlow.xcodeproj
 # Build: Cmd+B
 # Run: Cmd+R
 
 # Using xcodebuild
-xcodebuild -scheme PhotoFlow -configuration Debug build
+xcodebuild -scheme ScanFlow -configuration Debug build
 ```
 
 ### First Launch
@@ -75,8 +75,8 @@ For testing without hardware, enable "Use mock scanner" in Settings.
 
 ```
 ScanFlow/
-├── PhotoFlow/
-│   ├── PhotoFlowApp.swift      # App entry point
+├── ScanFlow/
+│   ├── ScanFlowApp.swift        # App entry point
 │   ├── Models/                  # Data models
 │   ├── ViewModels/              # State management
 │   │   ├── AppState.swift
@@ -86,7 +86,7 @@ ScanFlow/
 │   └── Views/
 │       ├── macOS/               # macOS-specific views
 │       └── Shared/              # Cross-platform views
-└── PhotoFlow.xcodeproj
+└── ScanFlow.xcodeproj
 ```
 
 ## Configuration
