@@ -15,41 +15,51 @@ struct ScannerStatusView: View {
 
     var body: some View {
         #if os(macOS)
-        HStack(spacing: 8) {
-            Circle()
-                .fill(statusColor)
-                .frame(width: 8, height: 8)
-                .overlay {
-                    if appState.scannerManager.connectionState == .scanning {
-                        Circle()
-                            .fill(statusColor.opacity(0.3))
-                            .frame(width: 16, height: 16)
-                            .scaleEffect(pulseAnimation ? 1.5 : 1.0)
-                            .animation(.easeInOut(duration: 1.0).repeatForever(), value: pulseAnimation)
+        Button {
+            appState.showScannerSelection = true
+        } label: {
+            HStack(spacing: 8) {
+                Circle()
+                    .fill(statusColor)
+                    .frame(width: 8, height: 8)
+                    .overlay {
+                        if appState.scannerManager.connectionState == .scanning {
+                            Circle()
+                                .fill(statusColor.opacity(0.3))
+                                .frame(width: 16, height: 16)
+                                .scaleEffect(pulseAnimation ? 1.5 : 1.0)
+                                .animation(.easeInOut(duration: 1.0).repeatForever(), value: pulseAnimation)
+                        }
                     }
-                }
 
-            VStack(alignment: .leading, spacing: 0) {
-                if let scanner = appState.scannerManager.selectedScanner {
-                    Text(scanner.name ?? "Unknown Scanner")
-                        .font(.caption)
-                        .fontWeight(.medium)
-                        .lineLimit(1)
-                } else if appState.useMockScanner && appState.scannerManager.connectionState.isConnected {
-                    Text("Mock Scanner")
-                        .font(.caption)
-                        .fontWeight(.medium)
+                VStack(alignment: .leading, spacing: 0) {
+                    if let scanner = appState.scannerManager.selectedScanner {
+                        Text(scanner.name ?? "Unknown Scanner")
+                            .font(.caption)
+                            .fontWeight(.medium)
+                            .lineLimit(1)
+                    } else if appState.useMockScanner && appState.scannerManager.connectionState.isConnected {
+                        Text("Mock Scanner")
+                            .font(.caption)
+                            .fontWeight(.medium)
+                            .lineLimit(1)
+                    } else {
+                        Text("No Scanner")
+                            .font(.caption)
+                            .fontWeight(.medium)
+                            .lineLimit(1)
+                    }
+                    Text(statusText)
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
                         .lineLimit(1)
                 }
-                Text(statusText)
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
             }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8))
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 6)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8))
+        .buttonStyle(.plain)
         .onAppear {
             pulseAnimation = true
         }

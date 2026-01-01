@@ -23,32 +23,48 @@ struct ScannerSelectionView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Header
-            VStack(spacing: 8) {
+            // Compact Header
+            HStack(spacing: 12) {
                 Image(systemName: "scanner")
-                    .font(.system(size: 48))
+                    .font(.system(size: 28))
                     .foregroundStyle(.secondary)
 
-                Text("Select a Scanner")
-                    .font(.largeTitle)
-                    .fontWeight(.semibold)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Select a Scanner")
+                        .font(.title2)
+                        .fontWeight(.semibold)
 
-                Text("Choose a scanner to begin. Available scanners are discovered automatically.")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
+                    Text("Available scanners are discovered automatically")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer()
+
+                // Status and refresh
+                if isRefreshing || appState.scannerManager.connectionState == .discovering {
+                    ProgressView()
+                        .scaleEffect(0.7)
+                } else {
+                    Button {
+                        refreshScanners()
+                    } label: {
+                        Image(systemName: "arrow.clockwise")
+                    }
+                    .buttonStyle(.borderless)
+                }
             }
-            .padding(.top, 40)
-            .padding(.bottom, 24)
+            .padding()
+            .background(.bar)
 
             Divider()
 
-            // Scanner list
-            ScrollView {
-                LazyVStack(spacing: 12) {
-                    if appState.scannerManager.availableScanners.isEmpty {
-                        emptyStateView
-                    } else {
+            // Scanner list - compact
+            if appState.scannerManager.availableScanners.isEmpty {
+                emptyStateView
+            } else {
+                ScrollView {
+                    LazyVStack(spacing: 8) {
                         ForEach(appState.scannerManager.availableScanners, id: \.self) { scanner in
                             ScannerRowView(
                                 scanner: scanner,
@@ -59,43 +75,20 @@ struct ScannerSelectionView: View {
                             }
                         }
                     }
+                    .padding(12)
                 }
-                .padding()
             }
-            .frame(maxHeight: .infinity)
 
-            Divider()
-
-            // Footer with status and controls
+            // Footer - compact
             HStack {
-                // Status indicator
-                HStack(spacing: 8) {
-                    if isRefreshing || appState.scannerManager.connectionState == .discovering {
-                        ProgressView()
-                            .scaleEffect(0.7)
-                        Text("Searching for scanners...")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    } else {
-                        Circle()
-                            .fill(appState.scannerManager.availableScanners.isEmpty ? .orange : .green)
-                            .frame(width: 8, height: 8)
-                        Text("\(appState.scannerManager.availableScanners.count) scanner\(appState.scannerManager.availableScanners.count == 1 ? "" : "s") found")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                }
+                Circle()
+                    .fill(appState.scannerManager.availableScanners.isEmpty ? .orange : .green)
+                    .frame(width: 6, height: 6)
+                Text("\(appState.scannerManager.availableScanners.count) scanner\(appState.scannerManager.availableScanners.count == 1 ? "" : "s")")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
 
                 Spacer()
-
-                // Refresh button
-                Button {
-                    refreshScanners()
-                } label: {
-                    Label("Refresh", systemImage: "arrow.clockwise")
-                }
-                .buttonStyle(.bordered)
-                .disabled(isRefreshing || appState.scannerManager.connectionState == .discovering)
 
                 // Use Mock Scanner button (for testing)
                 if appState.useMockScanner {
@@ -106,15 +99,17 @@ struct ScannerSelectionView: View {
                             hasSelectedScanner = true
                         }
                     } label: {
-                        Label("Use Mock Scanner", systemImage: "ladybug")
+                        Label("Mock Scanner", systemImage: "ladybug")
                     }
                     .buttonStyle(.borderedProminent)
+                    .controlSize(.small)
                 }
             }
-            .padding()
+            .padding(.horizontal)
+            .padding(.vertical, 8)
             .background(.bar)
         }
-        .frame(minWidth: 500, minHeight: 400)
+        .frame(width: 400, height: 320)
         .onAppear {
             logger.info("ScannerSelectionView appeared, starting scanner discovery")
             startAutoRefresh()
@@ -126,33 +121,32 @@ struct ScannerSelectionView: View {
     }
 
     private var emptyStateView: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 12) {
             Image(systemName: "scanner.fill")
-                .font(.system(size: 64))
+                .font(.system(size: 40))
                 .foregroundStyle(.tertiary)
 
             Text("No Scanners Found")
-                .font(.headline)
-
-            Text("Make sure your scanner is powered on and connected.\nWireless scanners should be on the same network.")
                 .font(.subheadline)
+                .fontWeight(.medium)
+
+            Text("Make sure your scanner is on and connected")
+                .font(.caption)
                 .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
 
             if appState.scannerManager.connectionState == .discovering {
                 ProgressView()
-                    .padding(.top, 8)
+                    .controlSize(.small)
             } else {
-                Button {
+                Button("Search Again") {
                     refreshScanners()
-                } label: {
-                    Label("Search Again", systemImage: "magnifyingglass")
                 }
-                .buttonStyle(.borderedProminent)
-                .padding(.top, 8)
+                .buttonStyle(.bordered)
+                .controlSize(.small)
             }
         }
-        .padding(40)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding()
     }
 
     private func connectToScanner(_ scanner: ICScannerDevice) {
@@ -219,37 +213,28 @@ struct ScannerRowView: View {
 
     var body: some View {
         Button(action: onSelect) {
-            HStack(spacing: 16) {
-                // Scanner icon
-                ZStack {
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(isSelected ? Color.accentColor.opacity(0.2) : Color.secondary.opacity(0.1))
-                        .frame(width: 56, height: 56)
-
-                    Image(systemName: scannerIcon)
-                        .font(.system(size: 24))
-                        .foregroundStyle(isSelected ? Color.accentColor : .secondary)
-                }
+            HStack(spacing: 12) {
+                // Scanner icon - compact
+                Image(systemName: scannerIcon)
+                    .font(.system(size: 18))
+                    .foregroundStyle(isSelected ? Color.accentColor : .secondary)
+                    .frame(width: 32, height: 32)
+                    .background(
+                        RoundedRectangle(cornerRadius: 6)
+                            .fill(isSelected ? Color.accentColor.opacity(0.15) : Color.secondary.opacity(0.1))
+                    )
 
                 // Scanner info
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: 2) {
                     Text(scanner.name ?? "Unknown Scanner")
-                        .font(.headline)
+                        .font(.subheadline)
+                        .fontWeight(.medium)
                         .foregroundStyle(.primary)
                         .lineLimit(1)
 
-                    HStack(spacing: 8) {
-                        // Connection type indicator
-                        Label(connectionType, systemImage: connectionIcon)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-
-                        if let location = scanner.uuidString {
-                            Text(String(location.prefix(8)))
-                                .font(.caption)
-                                .foregroundStyle(.tertiary)
-                        }
-                    }
+                    Text(connectionType)
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
                 }
 
                 Spacer()
@@ -257,24 +242,25 @@ struct ScannerRowView: View {
                 // Status indicator
                 if isConnecting && isSelected {
                     ProgressView()
-                        .scaleEffect(0.8)
+                        .controlSize(.small)
                 } else if isSelected {
                     Image(systemName: "checkmark.circle.fill")
-                        .font(.title2)
                         .foregroundStyle(.green)
                 } else {
                     Image(systemName: "chevron.right")
+                        .font(.caption)
                         .foregroundStyle(.tertiary)
                 }
             }
-            .padding()
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
             .background(
-                RoundedRectangle(cornerRadius: 12)
+                RoundedRectangle(cornerRadius: 8)
                     .fill(isSelected ? Color.accentColor.opacity(0.1) : Color(nsColor: .controlBackgroundColor))
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .strokeBorder(isSelected ? Color.accentColor : Color.clear, lineWidth: 2)
+                RoundedRectangle(cornerRadius: 8)
+                    .strokeBorder(isSelected ? Color.accentColor : Color.clear, lineWidth: 1.5)
             )
         }
         .buttonStyle(.plain)

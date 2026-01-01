@@ -19,14 +19,20 @@ struct ScanView: View {
             // Preview Area - takes remaining space
             PreviewView()
                 .frame(minWidth: 400, maxWidth: .infinity)
-                .layoutPriority(1) // Give priority to preview area
+                .layoutPriority(1)
 
-            Divider()
+            // Control Panel (Inspector style) - toggleable
+            if appState.showScanSettings {
+                // Divider that goes edge-to-edge
+                Rectangle()
+                    .fill(Color(nsColor: .separatorColor))
+                    .frame(width: 1)
 
-            // Control Panel (Inspector style) - fixed width, prevents overflow
-            ControlPanelView()
-                .background(.thinMaterial)
-                .fixedSize(horizontal: true, vertical: false) // Keep fixed width
+                ControlPanelView()
+                    .background(Color(nsColor: .windowBackgroundColor))
+                    .fixedSize(horizontal: true, vertical: false)
+                    .transition(.move(edge: .trailing).combined(with: .opacity))
+            }
         }
         .onAppear {
             logger.info("ScanView appeared")

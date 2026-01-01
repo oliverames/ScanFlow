@@ -53,6 +53,12 @@ struct PresetView: View {
                 }
             }
         }
+        .onAppear {
+            // Auto-select the current preset when view appears
+            if selectedPreset == nil {
+                selectedPreset = appState.currentPreset.id
+            }
+        }
     }
 
     private func binding(for preset: ScanPreset) -> Binding<ScanPreset> {

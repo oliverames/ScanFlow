@@ -8,6 +8,9 @@
 import Foundation
 import SwiftUI
 import os.log
+#if os(macOS)
+import PDFKit
+#endif
 
 private let logger = Logger(subsystem: "com.scanflow.app", category: "AppState")
 
@@ -44,6 +47,8 @@ class AppState {
     var isScanning: Bool = false
     var showingAlert: Bool = false
     var alertMessage: String = ""
+    var showScanSettings: Bool = true
+    var showScannerSelection: Bool = false
 
     // Settings - use separate ObservableObject to avoid @Observable/@AppStorage conflict
     @ObservationIgnored private var _settings = SettingsStore()
@@ -172,32 +177,134 @@ class AppState {
         let filename = generateFilename(format: preset.format)
         let fileURL = destURL.appendingPathComponent(filename)
 
-        // Save image
-        guard let tiffData = result.image.tiffRepresentation,
-              let bitmapImage = NSBitmapImageRep(data: tiffData) else {
-            throw ScannerError.scanFailed
-        }
+        let images = result.images
+        let pageCount = images.count
+        logger.info("Saving \(pageCount) page(s) to \(fileURL.path)")
 
-        let imageData: Data?
+        // Handle different formats
         switch preset.format {
         case .jpeg:
-            imageData = bitmapImage.representation(using: .jpeg, properties: [.compressionFactor: preset.quality])
+            // For JPEG, save only the first page (or create multiple files for multi-page)
+            if pageCount > 1 {
+                // Save each page as a separate JPEG with sequence number
+                for (index, image) in images.enumerated() {
+                    guard let tiffData = image.tiffRepresentation,
+                          let bitmapImage = NSBitmapImageRep(data: tiffData),
+                          let imageData = bitmapImage.representation(using: .jpeg, properties: [.compressionFactor: preset.quality]) else {
+                        throw ScannerError.scanFailed
+                    }
+                    let pageFilename = filename.replacingOccurrences(of: ".jpeg", with: "_\(String(format: "%03d", index + 1)).jpeg")
+                    let pageURL = destURL.appendingPathComponent(pageFilename)
+                    try imageData.write(to: pageURL)
+                }
+            } else {
+                guard let tiffData = result.image.tiffRepresentation,
+                      let bitmapImage = NSBitmapImageRep(data: tiffData),
+                      let imageData = bitmapImage.representation(using: .jpeg, properties: [.compressionFactor: preset.quality]) else {
+                    throw ScannerError.scanFailed
+                }
+                try imageData.write(to: fileURL)
+            }
+
         case .png:
-            imageData = bitmapImage.representation(using: .png, properties: [:])
+            // For PNG, save only the first page (or create multiple files for multi-page)
+            if pageCount > 1 {
+                for (index, image) in images.enumerated() {
+                    guard let tiffData = image.tiffRepresentation,
+                          let bitmapImage = NSBitmapImageRep(data: tiffData),
+                          let imageData = bitmapImage.representation(using: .png, properties: [:]) else {
+                        throw ScannerError.scanFailed
+                    }
+                    let pageFilename = filename.replacingOccurrences(of: ".png", with: "_\(String(format: "%03d", index + 1)).png")
+                    let pageURL = destURL.appendingPathComponent(pageFilename)
+                    try imageData.write(to: pageURL)
+                }
+            } else {
+                guard let tiffData = result.image.tiffRepresentation,
+                      let bitmapImage = NSBitmapImageRep(data: tiffData),
+                      let imageData = bitmapImage.representation(using: .png, properties: [:]) else {
+                    throw ScannerError.scanFailed
+                }
+                try imageData.write(to: fileURL)
+            }
+
         case .tiff:
-            imageData = tiffData
+            // For TIFF, save only the first page (or create multiple files for multi-page)
+            if pageCount > 1 {
+                for (index, image) in images.enumerated() {
+                    guard let tiffData = image.tiffRepresentation else {
+                        throw ScannerError.scanFailed
+                    }
+                    let pageFilename = filename.replacingOccurrences(of: ".tiff", with: "_\(String(format: "%03d", index + 1)).tiff")
+                    let pageURL = destURL.appendingPathComponent(pageFilename)
+                    try tiffData.write(to: pageURL)
+                }
+            } else {
+                guard let tiffData = result.image.tiffRepresentation else {
+                    throw ScannerError.scanFailed
+                }
+                try tiffData.write(to: fileURL)
+            }
+
+        case .pdf:
+            // Create multi-page PDF from all images (uncompressed)
+            let pdfDocument = PDFDocument()
+            for (index, image) in images.enumerated() {
+                if let pdfPage = PDFPage(image: image) {
+                    pdfDocument.insert(pdfPage, at: index)
+                } else {
+                    logger.warning("Failed to create PDF page from image \(index + 1)")
+                }
+            }
+
+            // Add metadata
+            var attributes: [PDFDocumentAttribute: Any] = [:]
+            attributes[.creatorAttribute] = "ScanFlow"
+            attributes[.producerAttribute] = "ScanFlow Scanner App"
+            attributes[.creationDateAttribute] = Date()
+            pdfDocument.documentAttributes = attributes
+
+            guard pdfDocument.write(to: fileURL) else {
+                throw ScannerError.scanFailed
+            }
+            logger.info("Created \(pageCount)-page PDF at \(fileURL.path)")
+
+        case .compressedPDF:
+            // Create compressed multi-page PDF using JPEG-compressed images
+            let pdfDocument = PDFDocument()
+            for (index, image) in images.enumerated() {
+                guard let tiffData = image.tiffRepresentation,
+                      let bitmapImage = NSBitmapImageRep(data: tiffData),
+                      let jpegData = bitmapImage.representation(using: .jpeg, properties: [.compressionFactor: preset.quality]),
+                      let jpegImage = NSImage(data: jpegData),
+                      let pdfPage = PDFPage(image: jpegImage) else {
+                    logger.warning("Failed to create compressed PDF page from image \(index + 1)")
+                    continue
+                }
+                pdfDocument.insert(pdfPage, at: index)
+            }
+
+            // Add metadata
+            var attributes: [PDFDocumentAttribute: Any] = [:]
+            attributes[.creatorAttribute] = "ScanFlow"
+            attributes[.producerAttribute] = "ScanFlow Scanner App"
+            attributes[.creationDateAttribute] = Date()
+            pdfDocument.documentAttributes = attributes
+
+            guard pdfDocument.write(to: fileURL) else {
+                throw ScannerError.scanFailed
+            }
+            logger.info("Created \(pageCount)-page compressed PDF at \(fileURL.path)")
         }
 
-        guard let data = imageData else {
-            throw ScannerError.scanFailed
-        }
-
-        try data.write(to: fileURL)
+        // Get file size
+        let fileAttributes = try FileManager.default.attributesOfItem(atPath: fileURL.path)
+        let fileSize = fileAttributes[.size] as? Int64 ?? 0
 
         return ScannedFile(
             filename: filename,
             fileURL: fileURL,
-            size: Int64(data.count),
+            size: fileSize,
             resolution: result.metadata.resolution,
             dateScanned: result.metadata.timestamp,
             scannerModel: result.metadata.scannerModel,
@@ -211,16 +318,29 @@ class AppState {
         dateFormatter.dateFormat = "yyyy-MM-dd"
         let dateString = dateFormatter.string(from: Date())
 
+        // Determine file extension
+        let fileExtension: String
+        switch format {
+        case .pdf, .compressedPDF:
+            fileExtension = "pdf"
+        case .jpeg:
+            fileExtension = "jpeg"
+        case .tiff:
+            fileExtension = "tiff"
+        case .png:
+            fileExtension = "png"
+        }
+
         // Find next available number
         var counter = 1
-        var filename = "\(dateString)_\(String(format: "%03d", counter)).\(format.rawValue.lowercased())"
+        var filename = "\(dateString)_\(String(format: "%03d", counter)).\(fileExtension)"
 
         let destPath = NSString(string: scanDestination).expandingTildeInPath
         let destURL = URL(fileURLWithPath: destPath)
 
         while FileManager.default.fileExists(atPath: destURL.appendingPathComponent(filename).path) {
             counter += 1
-            filename = "\(dateString)_\(String(format: "%03d", counter)).\(format.rawValue.lowercased())"
+            filename = "\(dateString)_\(String(format: "%03d", counter)).\(fileExtension)"
         }
 
         return filename

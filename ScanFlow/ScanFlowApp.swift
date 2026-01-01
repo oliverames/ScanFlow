@@ -16,11 +16,11 @@ struct ScanFlowApp: App {
         WindowGroup {
             MainWindow()
                 .environment(appState)
-                .frame(minWidth: 1100, idealWidth: 1300, minHeight: 700, idealHeight: 800)
         }
         .windowStyle(.hiddenTitleBar)
         .windowToolbarStyle(.unified)
-        .defaultSize(width: 1300, height: 800)
+        .defaultSize(width: 1200, height: 750)
+        .windowResizability(.contentSize)
         .commands {
             CommandGroup(replacing: .newItem) {
                 Button("Start Scan") {

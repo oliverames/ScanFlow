@@ -13,37 +13,52 @@ private let logger = Logger(subsystem: "com.scanflow.app", category: "MainWindow
 
 struct MainWindow: View {
     @Environment(AppState.self) private var appState
-    @State private var hasSelectedScanner = false
 
     var body: some View {
         @Bindable var appState = appState
 
-        Group {
-            if hasSelectedScanner || appState.scannerManager.connectionState.isConnected {
-                mainContentView
-            } else {
-                ScannerSelectionView(hasSelectedScanner: $hasSelectedScanner)
+        mainContentView
+            .frame(minWidth: 900, minHeight: 600)
+            .sheet(isPresented: $appState.showScannerSelection) {
+                ScannerSelectionView(hasSelectedScanner: .init(
+                    get: { !appState.showScannerSelection },
+                    set: { if $0 { appState.showScannerSelection = false } }
+                ))
+                .frame(width: 420, height: 340)
+                .interactiveDismissDisabled(!appState.scannerManager.connectionState.isConnected && !appState.useMockScanner)
             }
-        }
-        .alert("Error", isPresented: $appState.showingAlert) {
-            Button("OK", role: .cancel) { }
-        } message: {
-            Text(appState.alertMessage)
-        }
-        .onChange(of: appState.scannerManager.connectionState) { oldState, newState in
-            logger.info("Connection state changed: \(oldState.description) -> \(newState.description)")
-            // If we disconnect, go back to scanner selection
-            if case .disconnected = newState, oldState.isConnected {
-                logger.info("Scanner disconnected, returning to selection view")
-                hasSelectedScanner = false
+            .alert("Error", isPresented: $appState.showingAlert) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(appState.alertMessage)
             }
-        }
+            .onChange(of: appState.scannerManager.connectionState) { oldState, newState in
+                logger.info("Connection state changed: \(oldState.description) -> \(newState.description)")
+                // If we connect, dismiss the sheet
+                if newState.isConnected && !oldState.isConnected {
+                    logger.info("Scanner connected, dismissing selection view")
+                    appState.showScannerSelection = false
+                }
+                // If we disconnect, show the sheet
+                if case .disconnected = newState, oldState.isConnected {
+                    logger.info("Scanner disconnected, showing selection view")
+                    appState.showScannerSelection = true
+                }
+            }
+            .onAppear {
+                // Show sheet if not connected
+                if !appState.scannerManager.connectionState.isConnected && !appState.useMockScanner {
+                    appState.showScannerSelection = true
+                }
+            }
     }
 
+    @State private var columnVisibility: NavigationSplitViewVisibility = .all
+
     private var mainContentView: some View {
-        NavigationSplitView(columnVisibility: .constant(.all)) {
+        NavigationSplitView(columnVisibility: $columnVisibility) {
             SidebarView()
-                .navigationSplitViewColumnWidth(min: 200, ideal: 220, max: 300)
+                .navigationSplitViewColumnWidth(min: 180, ideal: 200, max: 260)
         } detail: {
             DetailView()
                 .navigationSplitViewColumnWidth(min: 700, ideal: 900)
@@ -59,38 +74,68 @@ struct MainWindow: View {
 
                 Spacer()
 
-                // Change Scanner button
+                // Toggle scan settings panel
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        appState.showScanSettings.toggle()
+                    }
+                } label: {
+                    Image(systemName: "sidebar.right")
+                }
+                .help("Toggle Scan Settings")
+
+                // Change Scanner button - shows the scanner selection sheet
                 Button {
                     logger.info("User requested scanner change")
-                    hasSelectedScanner = false
-                    Task {
-                        await appState.scannerManager.disconnect()
-                    }
+                    appState.showScannerSelection = true
                 } label: {
                     Label("Change Scanner", systemImage: "scanner")
                 }
                 .help("Change Scanner")
 
                 Menu {
-                    Button("Quick Scan (300 DPI)") {
-                        appState.currentPreset = ScanPreset.defaults[0]
-                    }
-                    Button("Archive Quality (600 DPI)") {
-                        appState.currentPreset = ScanPreset.defaults[1]
+                    ForEach(appState.presets) { preset in
+                        Button {
+                            appState.currentPreset = preset
+                        } label: {
+                            HStack {
+                                Text(preset.name)
+                                if preset.id == appState.currentPreset.id {
+                                    Spacer()
+                                    Image(systemName: "checkmark")
+                                }
+                            }
+                        }
                     }
                 } label: {
-                    Image(systemName: "doc.viewfinder")
+                    HStack(spacing: 4) {
+                        Image(systemName: "doc.text")
+                            .font(.caption)
+                        Text(appState.currentPreset.name)
+                            .font(.callout)
+                            .lineLimit(1)
+                        Image(systemName: "chevron.up.chevron.down")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 6))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 6)
+                            .stroke(Color(nsColor: .separatorColor), lineWidth: 0.5)
+                    )
                 }
-                .help("Quick Presets")
+                .menuIndicator(.hidden)
+                .help("Select Preset")
 
                 Button {
                     Task {
-                        if appState.scannerManager.connectionState.isConnected {
-                            logger.info("Starting scan from toolbar")
+                        if appState.scannerManager.connectionState.isConnected || appState.useMockScanner {
+                            logger.info("Starting scan from toolbar with preset: \(appState.currentPreset.name)")
+                            // Add to queue first, then start scanning
+                            appState.addToQueue(preset: appState.currentPreset, count: 1)
                             await appState.startScanning()
-                        } else if appState.useMockScanner {
-                            logger.info("Connecting mock scanner from toolbar")
-                            await appState.scannerManager.connectMockScanner()
                         }
                     }
                 } label: {

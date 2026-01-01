@@ -16,20 +16,22 @@ struct SidebarView: View {
 
         List(NavigationSection.allCases, selection: $appState.selectedSection) { section in
             NavigationLink(value: section) {
-                Label {
+                HStack(spacing: 12) {
+                    Image(systemName: section.iconName)
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundStyle(.secondary)
+                        .frame(width: 24)
+
                     Text(section.rawValue)
                         .font(.body)
-                } icon: {
-                    Image(systemName: section.iconName)
-                        .font(.title3)
                 }
+                .padding(.vertical, 8)
+                .padding(.horizontal, 4)
             }
-            .padding(.vertical, 4)
         }
         .listStyle(.sidebar)
         .navigationTitle("ScanFlow")
-        .frame(minWidth: 200)
-        .background(.thinMaterial)
+        .frame(minWidth: 180, idealWidth: 200, maxWidth: 240)
     }
 }
 
